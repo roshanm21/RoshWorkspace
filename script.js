@@ -30,36 +30,53 @@ async function loadAccountAvatar() {
     const { data: profileFile, error: profileError } = await supabase.storage
       .from(STORAGE_BUCKET)
       .download(profilePath);
-    if (profileError) {
-      if (profileError.statusCode === "404" || profileError.status === 404) {
-        return;
-      }
+    if (profileError && profileError.statusCode !== "404" && profileError.status !== 404) {
       throw profileError;
     }
 
-    const profile = JSON.parse(await profileFile.text());
+    const profile = profileFile ? JSON.parse(await profileFile.text()) : {};
     if (typeof profile.name === "string" && profile.name.trim()) {
       accountAvatar.title = `Edit profile: ${profile.name}`;
       accountAvatar.setAttribute("aria-label", `Edit profile for ${profile.name}`);
     }
-    if (
-      typeof profile.avatar_path !== "string"
-      || !profile.avatar_path.startsWith(`users/${session.user.id}/`)
-    ) {
+
+    const avatarPaths = [
+      profile.avatar_path,
+      `users/${session.user.id}/avatar`,
+    ].filter((path, index, paths) => (
+      typeof path === "string"
+      && path.startsWith(`users/${session.user.id}/`)
+      && paths.indexOf(path) === index
+    ));
+
+    let signedUrl = "";
+    let lastAvatarError;
+    for (const avatarPath of avatarPaths) {
+      const { data: avatar, error: avatarError } = await supabase.storage
+        .from(STORAGE_BUCKET)
+        .createSignedUrl(avatarPath, 3600);
+      if (avatarError) {
+        lastAvatarError = avatarError;
+        continue;
+      }
+      signedUrl = avatar.signedUrl;
+      break;
+    }
+    if (!signedUrl) {
+      if (lastAvatarError) {
+        throw lastAvatarError;
+      }
       return;
     }
 
-    const { data: avatar, error: avatarError } = await supabase.storage
-      .from(STORAGE_BUCKET)
-      .createSignedUrl(profile.avatar_path, 3600);
-    if (avatarError) {
-      throw avatarError;
-    }
-
     const image = document.createElement("img");
-    image.src = avatar.signedUrl;
     image.alt = "";
-    accountAvatar.replaceChildren(image);
+    image.onload = () => accountAvatar.replaceChildren(image);
+    image.onerror = () => {
+      console.error("Could not display signed profile picture.");
+      image.remove();
+    };
+    image.src = signedUrl;
   } catch (error) {
     console.error("Could not load profile picture:", error);
   }
