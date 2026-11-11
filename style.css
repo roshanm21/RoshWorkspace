@@ -791,6 +791,16 @@ a {
   margin-top: 2px;
 }
 
+.folder-select {
+  appearance: none;
+  cursor: pointer;
+}
+
+.folder-select option {
+  color: var(--text-primary);
+  background: #17172b;
+}
+
 .database-upload-form .primary-button {
   width: 100%;
 }
@@ -798,7 +808,68 @@ a {
 .database-files {
   display: flex;
   flex-direction: column;
+  gap: 14px;
+}
+
+.database-folder {
+  min-width: 0;
+  padding: 14px;
+  border: 1px solid rgba(194, 139, 255, 0.18);
+  border-radius: 17px;
+  background:
+    linear-gradient(125deg, rgba(194, 139, 255, 0.055), transparent 55%),
+    rgba(255, 255, 255, 0.022);
+}
+
+.database-folder-heading {
+  display: flex;
+  align-items: center;
   gap: 9px;
+  margin-bottom: 11px;
+  color: var(--accent-lime);
+  font-family: "Bitcount Grid Single", system-ui, sans-serif;
+  font-size: 0.86rem;
+  font-weight: 400;
+}
+
+.database-folder-icon {
+  display: grid;
+  width: 28px;
+  height: 26px;
+  place-items: center;
+  border: 1px solid rgba(195, 247, 122, 0.28);
+  border-radius: 8px;
+  color: var(--accent-lime);
+  background: rgba(195, 247, 122, 0.08);
+  font-family: Inter, sans-serif;
+  font-size: 1rem;
+}
+
+.database-folder-heading small {
+  display: grid;
+  min-width: 22px;
+  height: 22px;
+  place-items: center;
+  margin-left: auto;
+  border-radius: 20px;
+  color: var(--accent-blue);
+  background: rgba(103, 232, 249, 0.1);
+  font-family: Inter, sans-serif;
+  font-size: 0.65rem;
+}
+
+.database-folder-files {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.database-folder-empty {
+  padding: 12px;
+  border: 1px dashed rgba(255, 255, 255, 0.12);
+  border-radius: 12px;
+  color: var(--text-muted);
+  font-size: 0.7rem;
 }
 
 .database-file {

@@ -3,6 +3,7 @@ import { getSupabase, STORAGE_BUCKET } from "./supabase-client.js";
 const MAX_FILE_SIZE = 25 * 1024 * 1024;
 const uploadForm = document.getElementById("database-upload-form");
 const projectInput = document.getElementById("database-project-input");
+const folderInput = document.getElementById("database-folder-input");
 const fileInput = document.getElementById("database-file-input");
 const fileDrop = document.querySelector(".file-drop");
 const filePrompt = document.querySelector(".file-prompt");
@@ -52,6 +53,11 @@ const LANGUAGE_BY_EXTENSION = {
   yaml: "YAML",
   yml: "YAML",
 };
+const DATABASE_FOLDERS = [
+  { name: "books", label: "Books" },
+  { name: "assignment", label: "Assignment" },
+  { name: "notes", label: "Notes" },
+];
 
 function cleanPathPart(value) {
   return value
@@ -218,13 +224,14 @@ function createFileCard(file, viewUrl, downloadUrl) {
   const card = document.createElement("article");
   card.className = "database-file";
   const canOpen = viewUrl !== "#";
+  const displayName = file.displayName || file.name;
   const openLink = document.createElement("a");
   openLink.className = "database-file-open";
   if (canOpen) {
     openLink.href = viewUrl;
     openLink.target = "_blank";
     openLink.rel = "noopener noreferrer";
-    openLink.setAttribute("aria-label", `Open ${file.name} in a new tab`);
+    openLink.setAttribute("aria-label", `Open ${displayName} in a new tab`);
     openLink.title = "Open file in a new tab";
   } else {
     card.classList.add("database-file-unavailable");
@@ -239,7 +246,7 @@ function createFileCard(file, viewUrl, downloadUrl) {
   details.className = "database-file-details";
 
   const name = document.createElement("strong");
-  name.textContent = file.name;
+  name.textContent = displayName;
 
   const metadata = document.createElement("small");
   const size = file.metadata?.size;
@@ -256,8 +263,8 @@ function createFileCard(file, viewUrl, downloadUrl) {
   downloadButton.className = "database-file-action database-download-action";
   downloadButton.type = "button";
   downloadButton.disabled = !canOpen;
-  downloadButton.setAttribute("aria-label", `Download ${file.name}`);
-  downloadButton.title = `Download ${file.name}`;
+  downloadButton.setAttribute("aria-label", `Download ${displayName}`);
+  downloadButton.title = `Download ${displayName}`;
   const downloadIcon = document.createElement("span");
   downloadIcon.setAttribute("aria-hidden", "true");
   downloadIcon.textContent = "↓";
@@ -295,7 +302,9 @@ async function collectBucketFiles(storage, prefix = "", depth = 0, files = []) {
       }
       const path = prefix ? `${prefix}/${entry.name}` : entry.name;
       if (entry.id) {
-        files.push({ ...entry, name: path });
+        if (![".keep", "keep.txt"].includes(entry.name)) {
+          files.push({ ...entry, name: path });
+        }
       } else {
         await collectBucketFiles(storage, path, depth + 1, files);
       }
@@ -312,6 +321,108 @@ async function collectBucketFiles(storage, prefix = "", depth = 0, files = []) {
   return files;
 }
 
+function getDatabaseFolder(filePath) {
+  const pathParts = filePath.split("/");
+  return pathParts.length > 1 ? pathParts[0] : "unfiled";
+}
+
+function getDatabaseFolderLabel(folderName) {
+  return DATABASE_FOLDERS.find((folder) => folder.name === folderName)?.label
+    || (folderName === "unfiled"
+      ? "Unfiled"
+      : folderName.replace(/[-_]+/g, " ").replace(/\b\w/g, (letter) => letter.toUpperCase()));
+}
+
+async function ensureDatabaseFolders(storage) {
+  const createdFolders = [];
+  for (const folder of DATABASE_FOLDERS) {
+    const { data: entries, error: listError } = await storage.list(folder.name, { limit: 1 });
+    if (listError) {
+      throw listError;
+    }
+    if (entries?.some((entry) => entry.name === "keep.txt")) {
+      continue;
+    }
+
+    const { error: uploadError } = await storage.upload(
+      `${folder.name}/keep.txt`,
+      new Blob([]),
+      { contentType: "text/plain", upsert: false },
+    );
+    if (uploadError && !/already exists|duplicate/i.test(uploadError.message)) {
+      throw uploadError;
+    }
+    if (!uploadError) {
+      createdFolders.push(folder.label);
+    }
+  }
+  return createdFolders;
+}
+
+function renderDatabaseFolders(storedFiles, signedFiles) {
+  const groupedFiles = new Map(DATABASE_FOLDERS.map((folder) => [folder.name, []]));
+  for (const [index, file] of storedFiles.entries()) {
+    const folder = getDatabaseFolder(file.name);
+    if (!groupedFiles.has(folder)) {
+      groupedFiles.set(folder, []);
+    }
+    groupedFiles.get(folder).push({ file, signedFile: signedFiles?.[index] });
+  }
+
+  const folders = [
+    ...DATABASE_FOLDERS.map((folder) => folder.name),
+    ...[...groupedFiles.keys()]
+      .filter((folder) => !DATABASE_FOLDERS.some((knownFolder) => knownFolder.name === folder))
+      .sort((left, right) => left.localeCompare(right)),
+  ];
+
+  for (const folderName of folders) {
+    const folderSection = document.createElement("section");
+    folderSection.className = "database-folder";
+
+    const heading = document.createElement("h3");
+    heading.className = "database-folder-heading";
+    const folderIcon = document.createElement("span");
+    folderIcon.className = "database-folder-icon";
+    folderIcon.setAttribute("aria-hidden", "true");
+    folderIcon.textContent = "▱";
+    const title = document.createElement("span");
+    title.textContent = getDatabaseFolderLabel(folderName);
+    const count = document.createElement("small");
+    count.textContent = String(groupedFiles.get(folderName)?.length || 0);
+    heading.append(folderIcon, title, count);
+
+    const folderFiles = document.createElement("div");
+    folderFiles.className = "database-folder-files";
+    const entries = groupedFiles.get(folderName) || [];
+    if (!entries.length) {
+      const empty = document.createElement("p");
+      empty.className = "database-folder-empty";
+      empty.textContent = "No files in this folder yet.";
+      folderFiles.append(empty);
+    }
+
+    entries.forEach(({ file, signedFile }) => {
+      const relativePath = folderName === "unfiled"
+        ? file.name
+        : file.name.slice(folderName.length + 1);
+      if (signedFile?.error || !signedFile?.signedUrl) {
+        console.error(`Could not create view URL for ${file.name}:`, signedFile?.error);
+        folderFiles.append(createFileCard({ ...file, displayName: relativePath }, "#", "#"));
+        return;
+      }
+      const downloadUrl = new URL(signedFile.signedUrl);
+      downloadUrl.searchParams.set("download", file.name.split("/").pop() || file.name);
+      folderFiles.append(
+        createFileCard({ ...file, displayName: relativePath }, signedFile.signedUrl, downloadUrl.href),
+      );
+    });
+
+    folderSection.append(heading, folderFiles);
+    filesContainer.append(folderSection);
+  }
+}
+
 async function loadFiles() {
   refreshButton.disabled = true;
   setStatus(listStatus, "Loading files...");
@@ -320,34 +431,22 @@ async function loadFiles() {
   try {
     const supabase = await getSupabase();
     const storedFiles = await collectBucketFiles(supabase.storage.from(STORAGE_BUCKET));
-    if (storedFiles.length === 0) {
-      setStatus(listStatus, "No files found in this bucket.");
-      const empty = document.createElement("p");
-      empty.className = "database-empty";
-      empty.textContent = "No files are visible yet. Run supabase-setup.sql to enable bucket listing, then refresh. If the PDFs still do not appear, they may be in a database table or a different bucket.";
-      filesContainer.append(empty);
-      return;
-    }
-
-    const { data: signedFiles, error: signedUrlError } = await supabase.storage
-      .from(STORAGE_BUCKET)
-      .createSignedUrls(storedFiles.map((file) => file.name), 3600);
-    if (signedUrlError) {
-      throw signedUrlError;
-    }
-
-    storedFiles.forEach((file, index) => {
-      const signedFile = signedFiles?.[index];
-      if (signedFile?.error || !signedFile?.signedUrl) {
-        console.error(`Could not create view URL for ${file.name}:`, signedFile?.error);
-        filesContainer.append(createFileCard(file, "#", "#"));
-        return;
+    let signedFiles = [];
+    if (storedFiles.length) {
+      const { data, error: signedUrlError } = await supabase.storage
+        .from(STORAGE_BUCKET)
+        .createSignedUrls(storedFiles.map((file) => file.name), 3600);
+      if (signedUrlError) {
+        throw signedUrlError;
       }
-      const downloadUrl = new URL(signedFile.signedUrl);
-      downloadUrl.searchParams.set("download", file.name.split("/").pop() || file.name);
-      filesContainer.append(createFileCard(file, signedFile.signedUrl, downloadUrl.href));
-    });
-    setStatus(listStatus, `${storedFiles.length} file${storedFiles.length === 1 ? "" : "s"} shown.`);
+      signedFiles = data || [];
+    }
+
+    renderDatabaseFolders(storedFiles, signedFiles);
+    setStatus(
+      listStatus,
+      `${storedFiles.length} file${storedFiles.length === 1 ? "" : "s"} shown in ${filesContainer.children.length} folder${filesContainer.children.length === 1 ? "" : "s"}.`,
+    );
   } catch (error) {
     console.error("Could not load Supabase files:", error);
     const message = error.message || "Check your Supabase setup.";
@@ -420,13 +519,14 @@ uploadForm.addEventListener("submit", async (event) => {
   }
 
   const fileName = getUploadFileName(projectName, file);
+  const filePath = `${folderInput.value}/${fileName}`;
   const submitButton = uploadForm.querySelector('button[type="submit"]');
   submitButton.disabled = true;
   setStatus(uploadStatus, "Uploading to Supabase...");
 
   try {
     const supabase = await getSupabase();
-    const { error } = await supabase.storage.from(STORAGE_BUCKET).upload(fileName, file, {
+    const { error } = await supabase.storage.from(STORAGE_BUCKET).upload(filePath, file, {
       cacheControl: "3600",
       upsert: false,
       contentType: file.type || "application/octet-stream",
@@ -435,7 +535,7 @@ uploadForm.addEventListener("submit", async (event) => {
       throw error;
     }
 
-    setStatus(uploadStatus, `${fileName} uploaded successfully.`);
+    setStatus(uploadStatus, `${fileName} uploaded to ${getDatabaseFolderLabel(folderInput.value)}.`);
     uploadForm.reset();
     filePrompt.textContent = "Choose a file or drop it here";
     await loadFiles();
@@ -447,7 +547,7 @@ uploadForm.addEventListener("submit", async (event) => {
       message.toLowerCase().includes("row-level security")
         ? "Upload blocked by Supabase Storage policy. Run supabase-setup.sql in the Supabase SQL Editor."
         : /already exists|duplicate/i.test(message)
-          ? `A file named "${fileName}" already exists. Choose a different name.`
+          ? `A file named "${fileName}" already exists in ${getDatabaseFolderLabel(folderInput.value)}. Choose a different name.`
           : `Upload failed: ${message}`,
       true,
     );
@@ -567,6 +667,20 @@ async function protectDatabasePage() {
     }
 
     databaseContent.hidden = false;
+    const storage = supabase.storage.from(STORAGE_BUCKET);
+    try {
+      const createdFolders = await ensureDatabaseFolders(storage);
+      if (createdFolders.length) {
+        setStatus(listStatus, `Created bucket folders: ${createdFolders.join(", ")}.`);
+      }
+    } catch (folderError) {
+      console.error("Could not create database folders in Supabase Storage:", folderError);
+      setStatus(
+        listStatus,
+        `Could not create Books, Assignment, and Notes in the bucket: ${folderError.message || "Check Storage permissions."}`,
+        true,
+      );
+    }
     await loadCodeFiles();
     supabase.auth.onAuthStateChange((event, session) => {
       if (event === "SIGNED_OUT" || !session) {
