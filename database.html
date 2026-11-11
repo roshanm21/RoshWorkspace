@@ -109,14 +109,15 @@
                     <form id="code-editor-form" class="code-editor-form">
                         <label class="field-label" for="code-file-name">File name and language</label>
                         <input id="code-file-name" class="text-field" type="text" maxlength="120"
-                            placeholder="e.g. app.js" autocomplete="off" required>
+                            placeholder="e.g. app.js" autocomplete="off" readonly required>
                         <p class="code-editor-hint">Use a file extension such as .js, .py, .html, or .css to set the language.</p>
                         <label class="field-label" for="code-editor-input">Code</label>
                         <textarea id="code-editor-input" class="code-editor-input" spellcheck="false"
-                            autocapitalize="off" autocomplete="off" placeholder="Write your code here..." required></textarea>
+                            autocapitalize="off" autocomplete="off" placeholder="Write your code here..." readonly></textarea>
                         <p id="code-editor-status" class="form-status" role="status" aria-live="polite"></p>
                         <div class="code-editor-actions">
-                            <button id="save-code-file" class="primary-button" type="submit">Save code file <span aria-hidden="true">↗</span></button>
+                            <button id="edit-code-file" class="secondary-button" type="button">Edit file</button>
+                            <button id="save-code-file" class="primary-button" type="submit" disabled>Save code file <span aria-hidden="true">↗</span></button>
                             <button id="new-code-file" class="secondary-button" type="button">New file</button>
                         </div>
                     </form>

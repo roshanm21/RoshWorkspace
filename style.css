@@ -752,12 +752,22 @@ a {
 
 .code-editor-actions {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(100px, 0.36fr);
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 9px;
 }
 
 .code-editor-actions .secondary-button {
   cursor: pointer;
+}
+
+.code-editor-actions button:disabled {
+  cursor: not-allowed;
+  opacity: 0.48;
+}
+
+.code-editor-input[readonly] {
+  cursor: text;
+  border-color: rgba(103, 232, 249, 0.25);
 }
 
 .code-files-list {
@@ -1843,7 +1853,11 @@ a {
   }
 
   .code-editor-actions {
-    grid-template-columns: minmax(0, 1fr) minmax(85px, 0.45fr);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  #save-code-file {
+    grid-column: 1 / -1;
   }
 
 }

@@ -13,6 +13,7 @@ begin
   drop policy if exists "Signed-in users can upload RWS-DBMS files" on storage.objects;
   drop policy if exists "Users can update their RWS-DBMS profile files" on storage.objects;
   drop policy if exists "Signed-in users can update RWS-DBMS codebase files" on storage.objects;
+  drop policy if exists "Signed-in users can update RWS-DBMS document files" on storage.objects;
 
   create policy "Signed-in users can read RWS-DBMS files"
     on storage.objects for select
@@ -67,6 +68,26 @@ begin
     with check (
       bucket_id = 'RWS-DBMS'
       and left(name, 9) = 'codebase/'
+    );
+
+  create policy "Signed-in users can update RWS-DBMS document files"
+    on storage.objects for update
+    to authenticated
+    using (
+      bucket_id = 'RWS-DBMS'
+      and (
+        left(name, 6) = 'books/'
+        or left(name, 11) = 'assignment/'
+        or left(name, 6) = 'notes/'
+      )
+    )
+    with check (
+      bucket_id = 'RWS-DBMS'
+      and (
+        left(name, 6) = 'books/'
+        or left(name, 11) = 'assignment/'
+        or left(name, 6) = 'notes/'
+      )
     );
 end
 $$;

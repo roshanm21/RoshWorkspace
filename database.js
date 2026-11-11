@@ -16,12 +16,19 @@ const codeEditorForm = document.getElementById("code-editor-form");
 const codeFileNameInput = document.getElementById("code-file-name");
 const codeEditorInput = document.getElementById("code-editor-input");
 const codeEditorStatus = document.getElementById("code-editor-status");
+const editCodeFileButton = document.getElementById("edit-code-file");
+const saveCodeFileButton = document.getElementById("save-code-file");
 const codeFilesStatus = document.getElementById("code-files-status");
 const codeFilesList = document.getElementById("code-files-list");
 const refreshCodeFilesButton = document.getElementById("refresh-code-files");
 const newCodeFileButton = document.getElementById("new-code-file");
 const CODEBASE_PREFIX = "codebase";
 const CODE_FILE_NAME_PATTERN = /^[A-Za-z0-9][A-Za-z0-9 _.-]*\.[A-Za-z0-9]+$/;
+const EDITABLE_TEXT_EXTENSIONS = new Set([
+  "c", "cpp", "cs", "css", "go", "h", "hpp", "htm", "html", "java", "js", "json",
+  "jsx", "md", "mjs", "php", "py", "rb", "rs", "scss", "sh", "sql", "svg", "ts",
+  "tsx", "txt", "xml", "yaml", "yml",
+]);
 const LANGUAGE_BY_EXTENSION = {
   c: "C",
   cpp: "C++",
@@ -58,6 +65,10 @@ const DATABASE_FOLDERS = [
   { name: "assignment", label: "Assignment" },
   { name: "notes", label: "Notes" },
 ];
+let activeCodeFilePath = null;
+let originalCodeFileName = "";
+let originalCodeContent = "";
+let isCodeEditorEditable = false;
 
 function cleanPathPart(value) {
   return value
@@ -95,6 +106,20 @@ function validateCodeFileName(fileName) {
   return fileName.length <= 120
     && CODE_FILE_NAME_PATTERN.test(fileName)
     && !fileName.includes("..");
+}
+
+function setCodeEditorEditable(editable) {
+  isCodeEditorEditable = editable;
+  codeEditorInput.readOnly = !editable;
+  codeFileNameInput.readOnly = !editable || Boolean(activeCodeFilePath);
+  saveCodeFileButton.disabled = !editable;
+  editCodeFileButton.textContent = editable ? "Cancel editing" : "Edit file";
+  editCodeFileButton.setAttribute("aria-label", editable ? "Cancel code edits" : "Edit code file");
+}
+
+function isEditableTextFile(fileName) {
+  const extension = fileName.split(".").pop()?.toLowerCase() || "";
+  return EDITABLE_TEXT_EXTENSIONS.has(extension);
 }
 
 function createCodeFileButton(file) {
@@ -200,12 +225,39 @@ async function loadCodeFile(fileName) {
       throw error;
     }
 
+    activeCodeFilePath = `${CODEBASE_PREFIX}/${fileName}`;
     codeFileNameInput.value = fileName;
     codeEditorInput.value = await data.text();
+    originalCodeFileName = fileName;
+    originalCodeContent = codeEditorInput.value;
+    setCodeEditorEditable(false);
     setStatus(codeEditorStatus, `${fileName} opened. Save to update this file.`);
-    codeEditorInput.focus();
   } catch (error) {
     console.error(`Could not open code file ${fileName}:`, error);
+    setStatus(codeEditorStatus, `Could not open ${fileName}: ${error.message || "Please try again."}`, true);
+  }
+}
+
+async function loadDatabaseTextFile(filePath) {
+  const fileName = filePath.split("/").pop() || filePath;
+  setStatus(codeEditorStatus, `Opening ${fileName}...`);
+  try {
+    const supabase = await getSupabase();
+    const { data, error } = await supabase.storage.from(STORAGE_BUCKET).download(filePath);
+    if (error) {
+      throw error;
+    }
+
+    activeCodeFilePath = filePath;
+    codeFileNameInput.value = fileName;
+    codeEditorInput.value = await data.text();
+    originalCodeFileName = fileName;
+    originalCodeContent = codeEditorInput.value;
+    setCodeEditorEditable(false);
+    setStatus(codeEditorStatus, `${fileName} opened from ${filePath}. Saving will replace its current contents.`);
+    document.getElementById("codebase-tab").click();
+  } catch (error) {
+    console.error(`Could not open database text file ${filePath}:`, error);
     setStatus(codeEditorStatus, `Could not open ${fileName}: ${error.message || "Please try again."}`, true);
   }
 }
@@ -233,6 +285,15 @@ function createFileCard(file, viewUrl, downloadUrl) {
     openLink.rel = "noopener noreferrer";
     openLink.setAttribute("aria-label", `Open ${displayName} in a new tab`);
     openLink.title = "Open file in a new tab";
+    if (isEditableTextFile(file.name)) {
+      openLink.removeAttribute("target");
+      openLink.removeAttribute("rel");
+      openLink.title = "Open this text file in Codebase to edit";
+      openLink.addEventListener("click", (event) => {
+        event.preventDefault();
+        void loadDatabaseTextFile(file.name);
+      });
+    }
   } else {
     card.classList.add("database-file-unavailable");
   }
@@ -560,6 +621,10 @@ refreshButton.addEventListener("click", loadFiles);
 
 codeEditorForm.addEventListener("submit", async (event) => {
   event.preventDefault();
+  if (!isCodeEditorEditable) {
+    return;
+  }
+
   const fileName = codeFileNameInput.value.trim();
   if (!validateCodeFileName(fileName)) {
     setStatus(codeEditorStatus, "Enter a simple file name with a supported extension, such as app.js. Do not include folders.", true);
@@ -567,13 +632,20 @@ codeEditorForm.addEventListener("submit", async (event) => {
     return;
   }
 
+  const filePath = activeCodeFilePath || `${CODEBASE_PREFIX}/${fileName}`;
+  if (!filePath.startsWith(`${CODEBASE_PREFIX}/`) && !window.confirm(
+    `This will truncate and replace the current contents of "${filePath}" with the editor contents. Continue?`,
+  )) {
+    return;
+  }
+
   const saveButton = document.getElementById("save-code-file");
   saveButton.disabled = true;
-  setStatus(codeEditorStatus, `Saving ${fileName}...`);
+  setStatus(codeEditorStatus, `Saving ${filePath}...`);
   try {
     const supabase = await getSupabase();
     const { error } = await supabase.storage.from(STORAGE_BUCKET).upload(
-      `${CODEBASE_PREFIX}/${fileName}`,
+      filePath,
       new Blob([codeEditorInput.value], { type: "text/plain;charset=utf-8" }),
       {
         cacheControl: "3600",
@@ -585,10 +657,18 @@ codeEditorForm.addEventListener("submit", async (event) => {
       throw error;
     }
 
-    setStatus(codeEditorStatus, `${fileName} saved in the codebase folder.`);
-    await loadCodeFiles();
+    activeCodeFilePath = filePath;
+    setStatus(codeEditorStatus, `${filePath} saved.`);
+    originalCodeFileName = fileName;
+    originalCodeContent = codeEditorInput.value;
+    setCodeEditorEditable(false);
+    if (filePath.startsWith(`${CODEBASE_PREFIX}/`)) {
+      await loadCodeFiles();
+    } else {
+      await loadFiles();
+    }
   } catch (error) {
-    console.error(`Could not save code file ${fileName}:`, error);
+    console.error(`Could not save file ${filePath}:`, error);
     const message = error.message || "Check Supabase Storage policies.";
     setStatus(
       codeEditorStatus,
@@ -603,9 +683,29 @@ codeEditorForm.addEventListener("submit", async (event) => {
 });
 
 newCodeFileButton.addEventListener("click", () => {
+  activeCodeFilePath = null;
   codeEditorForm.reset();
+  originalCodeFileName = "";
+  originalCodeContent = "";
+  setCodeEditorEditable(false);
   setStatus(codeEditorStatus, "Ready for a new code file.");
-  codeFileNameInput.focus();
+});
+
+editCodeFileButton.addEventListener("click", () => {
+  if (isCodeEditorEditable) {
+    codeFileNameInput.value = originalCodeFileName;
+    codeEditorInput.value = originalCodeContent;
+    setCodeEditorEditable(false);
+    setStatus(codeEditorStatus, "Edits discarded.");
+    return;
+  }
+
+  setCodeEditorEditable(true);
+  codeEditorInput.focus();
+  setStatus(
+    codeEditorStatus,
+    activeCodeFilePath ? "Editing file. Save when you are ready." : "Editor unlocked. Enter a file name and code, then save.",
+  );
 });
 
 refreshCodeFilesButton.addEventListener("click", loadCodeFiles);
