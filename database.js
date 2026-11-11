@@ -68,7 +68,7 @@ const DATABASE_FOLDERS = [
 let activeCodeFilePath = null;
 let originalCodeFileName = "";
 let originalCodeContent = "";
-let codeEditorMode = "empty";
+let codeEditorMode = "new";
 
 function cleanPathPart(value) {
   return value
@@ -113,10 +113,11 @@ function setCodeEditorMode(mode) {
   const canEdit = mode === "new" || mode === "editing";
   codeEditorInput.readOnly = !canEdit;
   codeFileNameInput.readOnly = mode !== "new";
-  editCodeFileButton.hidden = mode !== "reading" && mode !== "editing";
-  editCodeFileButton.textContent = mode === "editing" ? "Cancel editing" : "Edit file";
-  editCodeFileButton.setAttribute("aria-label", mode === "editing" ? "Cancel code edits" : "Edit code file");
-  saveCodeFileButton.hidden = !canEdit;
+  editCodeFileButton.hidden = mode !== "reading";
+  editCodeFileButton.textContent = "Edit file";
+  editCodeFileButton.setAttribute("aria-label", "Edit code file");
+  saveCodeFileButton.hidden = false;
+  saveCodeFileButton.disabled = !canEdit;
 }
 
 function isCodeEditorDirty() {
@@ -670,10 +671,11 @@ async function saveCurrentCodeFile({ confirmOverwrite = true } = {}) {
     return false;
   }
 
-  const filePath = activeCodeFilePath || `${CODEBASE_PREFIX}/${fileName}`;
+  const isEditingSavedFile = codeEditorMode === "editing" && activeCodeFilePath !== null;
+  const filePath = isEditingSavedFile ? activeCodeFilePath : `${CODEBASE_PREFIX}/${fileName}`;
   if (
     confirmOverwrite
-    && !filePath.startsWith(`${CODEBASE_PREFIX}/`)
+    && isEditingSavedFile
     && !window.confirm(
     `This will truncate and replace the current contents of "${filePath}" with the editor contents. Continue?`,
     )
@@ -685,15 +687,19 @@ async function saveCurrentCodeFile({ confirmOverwrite = true } = {}) {
   setStatus(codeEditorStatus, `Saving ${filePath}...`);
   try {
     const supabase = await getSupabase();
-    const { error } = await supabase.storage.from(STORAGE_BUCKET).upload(
-      filePath,
-      new Blob([codeEditorInput.value], { type: "text/plain;charset=utf-8" }),
-      {
+    const bucket = supabase.storage.from(STORAGE_BUCKET);
+    const fileContent = new Blob([codeEditorInput.value], { type: "text/plain;charset=utf-8" });
+    const result = isEditingSavedFile
+      ? await bucket.update(filePath, fileContent, {
         cacheControl: "3600",
         contentType: "text/plain;charset=utf-8",
-        upsert: true,
-      },
-    );
+      })
+      : await bucket.upload(filePath, fileContent, {
+        cacheControl: "3600",
+        contentType: "text/plain;charset=utf-8",
+        upsert: false,
+      });
+    const { error } = result;
     if (error) {
       throw error;
     }
