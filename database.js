@@ -108,6 +108,23 @@ function validateCodeFileName(fileName) {
     && !fileName.includes("..");
 }
 
+async function downloadLatestTextFile(supabase, filePath) {
+  const { data, error } = await supabase.storage
+    .from(STORAGE_BUCKET)
+    .createSignedUrl(filePath, 60);
+  if (error) {
+    throw error;
+  }
+
+  const downloadUrl = new URL(data.signedUrl);
+  downloadUrl.searchParams.set("cacheBust", Date.now().toString());
+  const response = await fetch(downloadUrl, { cache: "no-store" });
+  if (!response.ok) {
+    throw new Error(`Download failed with status ${response.status}.`);
+  }
+  return response.text();
+}
+
 function setCodeEditorMode(mode) {
   codeEditorMode = mode;
   const canEdit = mode === "new" || mode === "editing";
@@ -255,16 +272,11 @@ async function loadCodeFile(fileName) {
   setStatus(codeEditorStatus, `Opening ${fileName}...`);
   try {
     const supabase = await getSupabase();
-    const { data, error } = await supabase.storage
-      .from(STORAGE_BUCKET)
-      .download(`${CODEBASE_PREFIX}/${fileName}`);
-    if (error) {
-      throw error;
-    }
-
-    activeCodeFilePath = `${CODEBASE_PREFIX}/${fileName}`;
+    const filePath = `${CODEBASE_PREFIX}/${fileName}`;
+    const content = await downloadLatestTextFile(supabase, filePath);
+    activeCodeFilePath = filePath;
     codeFileNameInput.value = fileName;
-    codeEditorInput.value = await data.text();
+    codeEditorInput.value = content;
     originalCodeFileName = fileName;
     originalCodeContent = codeEditorInput.value;
     setCodeEditorMode("reading");
@@ -284,14 +296,10 @@ async function loadDatabaseTextFile(filePath) {
   setStatus(codeEditorStatus, `Opening ${fileName}...`);
   try {
     const supabase = await getSupabase();
-    const { data, error } = await supabase.storage.from(STORAGE_BUCKET).download(filePath);
-    if (error) {
-      throw error;
-    }
-
+    const content = await downloadLatestTextFile(supabase, filePath);
     activeCodeFilePath = filePath;
     codeFileNameInput.value = fileName;
-    codeEditorInput.value = await data.text();
+    codeEditorInput.value = content;
     originalCodeFileName = fileName;
     originalCodeContent = codeEditorInput.value;
     setCodeEditorMode("reading");
@@ -691,11 +699,11 @@ async function saveCurrentCodeFile({ confirmOverwrite = true } = {}) {
     const fileContent = new Blob([codeEditorInput.value], { type: "text/plain;charset=utf-8" });
     const result = isEditingSavedFile
       ? await bucket.update(filePath, fileContent, {
-        cacheControl: "3600",
+        cacheControl: "0",
         contentType: "text/plain;charset=utf-8",
       })
       : await bucket.upload(filePath, fileContent, {
-        cacheControl: "3600",
+        cacheControl: "0",
         contentType: "text/plain;charset=utf-8",
         upsert: false,
       });
