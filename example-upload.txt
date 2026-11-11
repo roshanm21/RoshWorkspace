@@ -1,0 +1,4 @@
+Example upload
+
+This file is a small test of the Rosh portfolio's Supabase Storage upload.
+If you can read this from the RWS-DBMS bucket, the upload and file listing are working.

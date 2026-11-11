@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#10152a">
+    <title>File database — Rosh</title>
+    <link rel="stylesheet" href="./style.css">
+    <link rel="icon" type="image/png" href="./img/icon.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Bitcount+Grid+Single:wght@100..900&family=Jersey+10&family=Press+Start+2P&display=swap"
+        rel="stylesheet">
+</head>
+
+<body>
+    <div class="ambient-background" aria-hidden="true"></div>
+
+    <header class="topbar glass">
+        <a class="brand" href="./index.html" aria-label="Back to Rosh portfolio">
+            <img src="./img/icon.png" alt="" class="brand-icon">
+            <span>ROSH<span class="brand-dot">.</span></span>
+        </a>
+        <span class="database-topbar-label">PRIVATE WORKSPACE</span>
+        <div class="topbar-actions">
+            <a class="header-button glass" href="./index.html" aria-label="Back to portfolio">
+                <span aria-hidden="true">←</span>
+                <span class="button-label">Portfolio</span>
+            </a>
+        </div>
+    </header>
+
+    <main id="database-content" class="database-main" hidden>
+        <div class="database-intro">
+            <div>
+                <p class="eyebrow">YOUR PRIVATE WORKSPACE</p>
+                <h1>Workspace<span class="brand-dot">.</span></h1>
+                <p>Manage stored files or write and save code files in your shared workspace.</p>
+            </div>
+            <a class="secondary-button" href="./index.html">← Back to portfolio</a>
+        </div>
+
+        <div class="workspace-tabs" role="tablist" aria-label="Workspace sections">
+            <button id="database-tab" class="workspace-tab is-active" type="button" role="tab"
+                aria-selected="true" aria-controls="database-panel" data-workspace-tab="database">Database</button>
+            <button id="codebase-tab" class="workspace-tab" type="button" role="tab"
+                aria-selected="false" aria-controls="codebase-panel" data-workspace-tab="codebase" tabindex="-1">Codebase</button>
+        </div>
+
+        <section id="database-panel" class="workspace-tab-panel" role="tabpanel"
+            aria-labelledby="database-tab" data-workspace-panel="database">
+            <div class="database-layout">
+                <section class="database-panel glass" aria-labelledby="database-upload-title">
+                    <div class="panel-heading">
+                        <div>
+                            <p class="eyebrow">ADD TO STORAGE</p>
+                            <h2 id="database-upload-title">Upload file</h2>
+                        </div>
+                        <span class="heading-icon" aria-hidden="true">↥</span>
+                    </div>
+                    <form id="database-upload-form" class="database-upload-form">
+                        <label class="field-label" for="database-project-input">File name</label>
+                        <input id="database-project-input" class="text-field" type="text"
+                            placeholder="What should this file be called?" required>
+                        <label class="file-drop" for="database-file-input">
+                            <span class="file-icon" aria-hidden="true">＋</span>
+                            <span class="file-prompt">Choose a file or drop it here</span>
+                            <span class="file-hint">Any file type · 25 MB max</span>
+                            <input id="database-file-input" type="file" required>
+                        </label>
+                        <p id="database-upload-status" class="form-status" aria-live="polite"></p>
+                        <button class="primary-button" type="submit">Upload to database <span aria-hidden="true">↗</span></button>
+                    </form>
+                    <p class="database-warning">Codebase access requires a signed-in account. Follow the storage policies before uploading private or sensitive files.</p>
+                </section>
+
+                <section class="database-panel glass" aria-labelledby="database-files-title">
+                    <div class="panel-heading">
+                        <div>
+                            <p class="eyebrow">FILES SAVED IN SUPABASE</p>
+                            <h2 id="database-files-title">Stored files</h2>
+                        </div>
+                        <button id="refresh-files" class="refresh-button" type="button">Refresh ↻</button>
+                    </div>
+                    <p id="database-list-status" class="database-status" aria-live="polite">Connecting to Supabase...</p>
+                    <div id="database-files" class="database-files" aria-live="polite"></div>
+                </section>
+            </div>
+        </section>
+
+        <section id="codebase-panel" class="workspace-tab-panel" role="tabpanel"
+            aria-labelledby="codebase-tab" data-workspace-panel="codebase" hidden>
+            <div class="codebase-layout">
+                <section class="database-panel glass code-editor-panel" aria-labelledby="code-editor-title">
+                    <div class="panel-heading">
+                        <div>
+                            <p class="eyebrow">WRITE AND SAVE</p>
+                            <h2 id="code-editor-title">Code editor</h2>
+                        </div>
+                        <span class="heading-icon" aria-hidden="true">{ }</span>
+                    </div>
+                    <form id="code-editor-form" class="code-editor-form">
+                        <label class="field-label" for="code-file-name">File name and language</label>
+                        <input id="code-file-name" class="text-field" type="text" maxlength="120"
+                            placeholder="e.g. app.js" autocomplete="off" required>
+                        <p class="code-editor-hint">Use a file extension such as .js, .py, .html, or .css to set the language.</p>
+                        <label class="field-label" for="code-editor-input">Code</label>
+                        <textarea id="code-editor-input" class="code-editor-input" spellcheck="false"
+                            autocapitalize="off" autocomplete="off" placeholder="Write your code here..." required></textarea>
+                        <p id="code-editor-status" class="form-status" role="status" aria-live="polite"></p>
+                        <div class="code-editor-actions">
+                            <button id="save-code-file" class="primary-button" type="submit">Save code file <span aria-hidden="true">↗</span></button>
+                            <button id="new-code-file" class="secondary-button" type="button">New file</button>
+                        </div>
+                    </form>
+                </section>
+
+                <section class="database-panel glass code-files-panel" aria-labelledby="code-files-title">
+                    <div class="panel-heading">
+                        <div>
+                            <p class="eyebrow">SAVED IN THE CODEBASE FOLDER</p>
+                            <h2 id="code-files-title">Your code files</h2>
+                        </div>
+                        <button id="refresh-code-files" class="refresh-button" type="button">Refresh ↻</button>
+                    </div>
+                    <p id="code-files-status" class="database-status" aria-live="polite">Load saved code files by opening this tab.</p>
+                    <div id="code-files-list" class="code-files-list" aria-live="polite"></div>
+                </section>
+            </div>
+        </section>
+    </main>
+
+    <script type="module" src="./database.js"></script>
+</body>
+
+</html>

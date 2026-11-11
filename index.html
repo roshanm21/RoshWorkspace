@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#10152a">
+    <title>Rosh — Portfolio</title>
+    <link rel="stylesheet" href="./style.css">
+    <link rel="icon" type="image/png" href="./img/icon.png">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Bitcount+Grid+Single:wght@100..900&family=Jersey+10&family=Press+Start+2P&display=swap"
+        rel="stylesheet">
+</head>
+
+<body>
+    <div class="ambient-background" aria-hidden="true"></div>
+
+    <header class="topbar glass">
+        <a class="brand" href="#" aria-label="Rosh home">
+            <img src="./img/icon.png" alt="" class="brand-icon">
+            <span>ROSH<span class="brand-dot">.</span></span>
+        </a>
+        <label class="topbar-search">
+            <span class="sr-only">Search projects</span>
+            <input id="project-search" type="search" placeholder="Search projects..." autocomplete="off">
+            <span class="search-icon" aria-hidden="true">⌕</span>
+        </label>
+        <div class="topbar-actions">
+            <a id="codebase-button" class="header-button glass" href="./database.html" aria-label="Open the database tab">
+                <span aria-hidden="true">⌘</span>
+                <span class="button-label">Codebase</span>
+            </a>
+            <a id="account-avatar" class="account-avatar" href="./database.html"
+                aria-label="Open Codebase sign-in" title="Codebase account access">
+                <span aria-hidden="true">○</span>
+            </a>
+        </div>
+    </header>
+
+    <main id="page-content" class="dashboard" hidden>
+        <aside class="profile-panel glass">
+            <div class="profile-topline">
+                <span class="status-dot"></span>
+                <span>AVAILABLE FOR PROJECTS</span>
+            </div>
+            <div class="profile-avatar-wrap">
+                <img class="profile-avatar" src="./img/icon.png" alt="Rosh">
+                <span class="avatar-glow" aria-hidden="true"></span>
+            </div>
+            <p class="eyebrow">HELLO, I'M</p>
+            <h1 class="animated-gradient">Rosh</h1>
+            <p class="profile-role">Web developer &amp; creative builder</p>
+            <div class="profile-divider"></div>
+            <p class="profile-copy">I turn curious ideas into playful, useful things for the web.</p>
+            <div class="profile-stat">
+                <span class="stat-number">05</span>
+                <span class="stat-caption">PROJECTS<br>IN THE WORKS</span>
+            </div>
+            <p class="profile-location"><span aria-hidden="true">⌖</span> Building from wherever I am</p>
+        </aside>
+
+        <section class="workspace" aria-label="Portfolio content">
+            <section class="projects-panel glass panel" aria-labelledby="projects-title">
+                <div class="panel-heading">
+                    <div>
+                        <p class="eyebrow">A FEW THINGS I'VE MADE</p>
+                        <h2 id="projects-title">Projects <span id="project-count" class="project-count">00</span></h2>
+                    </div>
+                    <span class="heading-icon" aria-hidden="true">↗</span>
+                </div>
+                <p id="projects-status" class="projects-status" role="status" aria-live="polite">Loading projects...</p>
+                <div id="project-grid" class="project-grid"></div>
+            </section>
+
+            <section class="social-section" aria-labelledby="social-title">
+                <div class="social-heading">
+                    <div>
+                        <p class="eyebrow">FIND ME AROUND THE WEB</p>
+                        <h2 id="social-title">Elsewhere<span class="brand-dot">.</span></h2>
+                    </div>
+                    <span class="social-heading-note">SAY HI, I'M FRIENDLY <span aria-hidden="true">↘</span></span>
+                </div>
+                <div class="social-grid">
+                    <a class="social-card youtube glass" href="https://www.youtube.com/@roshplays21" target="_blank" rel="noopener noreferrer">
+                        <span class="social-symbol" aria-hidden="true">▶</span>
+                        <span class="social-copy"><strong>YouTube</strong><small>@Roshplays21</small></span>
+                        <span class="social-arrow" aria-hidden="true">↗</span>
+                    </a>
+                    <a class="social-card github glass" href="https://github.com/the-rosh" target="_blank" rel="noopener noreferrer">
+                        <span class="social-symbol" aria-hidden="true">⌘</span>
+                        <span class="social-copy"><strong>GitHub</strong><small>@the-rosh</small></span>
+                        <span class="social-arrow" aria-hidden="true">↗</span>
+                    </a>
+                    <a class="social-card linkedin glass" href="https://www.linkedin.com/in/roshanmishra21/" target="_blank" rel="noopener noreferrer">
+                        <span class="social-symbol" aria-hidden="true">in</span>
+                        <span class="social-copy"><strong>LinkedIn</strong><small>@roshanmishra21</small></span>
+                        <span class="social-arrow" aria-hidden="true">↗</span>
+                    </a>
+                    <a class="social-card instagram glass" href="https://www.instagram.com/wof.rosh/" target="_blank" rel="noopener noreferrer">
+                        <span class="social-symbol" aria-hidden="true">◎</span>
+                        <span class="social-copy"><strong>Instagram</strong><small>@wof.rosh</small></span>
+                        <span class="social-arrow" aria-hidden="true">↗</span>
+                    </a>
+                </div>
+            </section>
+            <footer class="page-footer">
+                <span>MADE WITH CURIOSITY</span>
+                <button id="likeBtn" class="like-inline" type="button" aria-label="Like this page" aria-pressed="false">
+                    <span aria-hidden="true">♥</span>
+                    <span id="countDisplay">0</span>
+                </button>
+                <span id="like-status" class="sr-only" role="status" aria-live="polite"></span>
+                <span>© <span id="year"></span> ROSH</span>
+            </footer>
+        </section>
+    </main>
+
+    <section id="preloader" class="screen-overlay" aria-label="Loading portfolio">
+        <div class="loader-card glass">
+            <span class="loader-mark">R<span>.</span></span>
+            <p class="eyebrow">GETTING THINGS READY</p>
+            <div class="loader-track"><span></span></div>
+            <p class="loader-caption">Loading your little corner of the internet</p>
+        </div>
+    </section>
+
+    <script type="module" src="./script.js"></script>
+</body>
+
+</html>

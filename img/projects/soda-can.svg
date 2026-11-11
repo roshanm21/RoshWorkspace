@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="640" height="360" viewBox="0 0 640 360" fill="none">
+  <defs>
+    <linearGradient id="bg" x1="30" y1="25" x2="592" y2="340" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FFAF67"/>
+      <stop offset="1" stop-color="#F45A75"/>
+    </linearGradient>
+    <linearGradient id="can" x1="261" y1="82" x2="396" y2="294" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FFF1C7"/>
+      <stop offset=".45" stop-color="#FBE1A1"/>
+      <stop offset="1" stop-color="#F5B968"/>
+    </linearGradient>
+  </defs>
+  <path fill="url(#bg)" d="M0 0h640v360H0z"/>
+  <circle cx="117" cy="76" r="85" fill="#FFE2A4" fill-opacity=".26"/>
+  <circle cx="548" cy="297" r="124" fill="#A93077" fill-opacity=".25"/>
+  <path d="M198 293c78-28 166-30 248-3" stroke="#712D58" stroke-opacity=".3" stroke-width="15" stroke-linecap="round"/>
+  <path d="m287 78 66-11 38 216-95 17-28-190c-2-14 5-27 19-32Z" fill="url(#can)"/>
+  <path d="m286 83 63-11 4 22-64 11-3-22Z" fill="#D99D62"/>
+  <path d="m296 275 91-16 4 22-91 17-4-23Z" fill="#DB9859"/>
+  <path d="m302 146 59-10 4 23-59 10-4-23Z" fill="#F07859"/>
+  <text x="329" y="188" fill="#7D3153" font-family="Arial,sans-serif" font-size="21" font-weight="800" text-anchor="middle" transform="rotate(-10 329 188)">SODA</text>
+  <path d="M183 154c12-25 34-42 61-47-10 23-31 42-61 47Zm9 17c17-17 42-25 67-20-15 18-38 27-67 20Z" fill="#FFF2D4" fill-opacity=".75"/>
+</svg>

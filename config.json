@@ -1,0 +1,44 @@
+{
+  "projects": [
+    {
+      "name": "Soda Can",
+      "category": "WEB",
+      "description": "A bright product page for a fizzy drink concept.",
+      "href": "https://rosh-soda.netlify.app/",
+      "image": "./img/projects/soda-can.svg",
+      "imageAlt": "Illustrated soda can on a colorful background"
+    },
+    {
+      "name": "Whiteboard",
+      "category": "TOOL",
+      "description": "A lightweight canvas for sketches and quick ideas.",
+      "href": "https://rosh-whiteboard.netlify.app/",
+      "image": "./img/projects/whiteboard.svg",
+      "imageAlt": "Illustrated whiteboard with colorful notes"
+    },
+    {
+      "name": "Random Cat",
+      "category": "FUN",
+      "description": "A playful page that serves up a different cat.",
+      "href": "https://rosh-randomcat.netlify.app/",
+      "image": "./img/projects/random-cat.svg",
+      "imageAlt": "Illustrated cat face"
+    },
+    {
+      "name": "Hackerman",
+      "category": "EXPERIMENT",
+      "description": "A neon, terminal-inspired web experiment.",
+      "href": "https://rosh-hackerman.netlify.app/",
+      "image": "./img/projects/hackerman.svg",
+      "imageAlt": "Illustrated neon terminal display"
+    },
+    {
+      "name": "New project",
+      "category": "NEXT UP",
+      "description": "A new idea is taking shape—check back soon.",
+      "href": "#",
+      "image": "./img/projects/new-project.svg",
+      "imageAlt": "Abstract illustration representing a project in progress"
+    }
+  ]
+}

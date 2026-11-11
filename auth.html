@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#10152a">
+    <title>Sign in — Rosh</title>
+    <link rel="stylesheet" href="./style.css">
+    <link rel="icon" type="image/png" href="./img/icon.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Bitcount+Grid+Single:wght@100..900&family=Jersey+10&family=Press+Start+2P&display=swap"
+        rel="stylesheet">
+</head>
+
+<body class="auth-page">
+    <div class="ambient-background" aria-hidden="true"></div>
+
+    <header class="topbar glass">
+        <a class="brand" href="./index.html" aria-label="Rosh home">
+            <img src="./img/icon.png" alt="" class="brand-icon">
+            <span>ROSH<span class="brand-dot">.</span></span>
+        </a>
+        <span class="database-topbar-label">CODEBASE ACCESS</span>
+        <div class="topbar-actions">
+            <a class="header-button glass" href="./index.html" aria-label="Back to portfolio">
+                <span aria-hidden="true">←</span>
+                <span class="button-label">Portfolio</span>
+            </a>
+        </div>
+    </header>
+
+    <main class="auth-main">
+        <section id="auth-form-panel" class="auth-card glass" aria-labelledby="auth-title">
+            <img class="auth-avatar" src="./img/icon.png" alt="">
+            <p class="eyebrow">PRIVATE CODEBASE</p>
+            <h1 id="auth-title">Welcome back<span class="brand-dot">.</span></h1>
+            <p class="auth-description">Sign in to open the Codebase. The portfolio is public and does not require an account.</p>
+
+            <button id="google-sign-in" class="google-button" type="button" disabled
+                aria-describedby="google-setup-status">
+                <span class="google-mark" aria-hidden="true">G</span>
+                Google sign-in unavailable
+            </button>
+            <p id="google-setup-status" class="auth-provider-note" role="status">
+                Checking Google sign-in availability...
+            </p>
+            <div class="auth-divider"><span>or use email</span></div>
+
+            <div class="auth-mode-switch" role="group" aria-label="Choose sign-in or sign-up">
+                <button id="sign-in-mode" class="auth-mode is-active" type="button" aria-pressed="true">Sign in</button>
+                <button id="sign-up-mode" class="auth-mode" type="button" aria-pressed="false">Create account</button>
+            </div>
+
+            <form id="email-auth-form" class="auth-form">
+                <label class="field-label" for="auth-email">Email address</label>
+                <input id="auth-email" class="text-field" type="email" autocomplete="email"
+                    placeholder="you@example.com" required>
+
+                <label class="field-label" for="auth-password">Password</label>
+                <input id="auth-password" class="text-field" type="password" autocomplete="current-password"
+                    minlength="8" placeholder="At least 8 characters" required>
+
+                <p id="auth-runtime-note" class="auth-provider-note" hidden></p>
+                <p id="auth-status" class="form-status auth-status" role="status" aria-live="polite"></p>
+                <button id="email-submit" class="primary-button" type="submit">
+                    Sign in <span aria-hidden="true">↗</span>
+                </button>
+            </form>
+            <p class="auth-security-note">Your session is verified by Supabase. The Codebase requires sign-in; the portfolio is public.</p>
+        </section>
+
+        <section id="signed-in-panel" class="auth-card glass" aria-labelledby="signed-in-title" hidden>
+            <div class="profile-heading">
+                <button id="auth-avatar-picker" class="auth-avatar account-avatar-large" type="button"
+                    aria-label="Change profile picture" title="Change profile picture">
+                    <span id="auth-user-avatar-placeholder" aria-hidden="true">○</span>
+                    <img id="auth-user-avatar" alt="" hidden>
+                </button>
+                <div class="profile-heading-text">
+                    <p class="eyebrow">SIGNED IN AS</p>
+                    <h1 id="auth-user-name">User</h1>
+                </div>
+            </div>
+            <input id="auth-avatar-file" type="file" accept="image/*" hidden>
+            <p class="eyebrow">AUTHENTICATED WITH SUPABASE</p>
+            <h2 id="signed-in-title">You’re signed in<span class="brand-dot">.</span></h2>
+            <p id="auth-user-email" class="auth-description"></p>
+            <form id="profile-form" class="profile-form">
+                <label class="field-label" for="auth-display-name">Display name</label>
+                <input id="auth-display-name" class="text-field" type="text" maxlength="60" autocomplete="name"
+                    placeholder="Your name" required>
+                <button id="save-profile" class="secondary-button" type="submit">Save profile</button>
+            </form>
+            <a id="continue-link" class="primary-button auth-continue" href="./database.html">
+                Continue to Codebase <span aria-hidden="true">↗</span>
+            </a>
+            <button id="sign-out" class="secondary-button auth-sign-out" type="button">Sign out</button>
+            <p id="account-status" class="form-status auth-status" role="status" aria-live="polite"></p>
+        </section>
+
+    </main>
+
+    <script type="module" src="./auth.js"></script>
+</body>
+
+</html>
