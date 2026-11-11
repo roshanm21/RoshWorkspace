@@ -713,6 +713,19 @@ a {
   gap: 10px;
 }
 
+.code-editor-heading-actions {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+
+.new-code-tab-button {
+  min-height: 36px;
+  padding: 0 12px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
 .code-editor-hint {
   margin: -4px 0 8px;
   color: var(--text-muted);
@@ -751,18 +764,72 @@ a {
 }
 
 .code-editor-actions {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 9px;
+  display: flex;
+  min-height: 43px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
 }
 
 .code-editor-actions .secondary-button {
   cursor: pointer;
 }
 
-.code-editor-actions button:disabled {
-  cursor: not-allowed;
-  opacity: 0.48;
+.code-editor-actions [hidden] {
+  display: none;
+}
+
+.save-code-button {
+  display: inline-flex;
+  width: 43px;
+  min-height: 43px;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 9px;
+  margin-left: auto;
+  padding: 0 12px;
+  overflow: hidden;
+  border: 1px solid rgba(103, 232, 249, 0.42);
+  border-radius: 13px;
+  color: #f7f5ff;
+  background: linear-gradient(110deg, rgba(194, 139, 255, 0.78), rgba(71, 194, 216, 0.72));
+  box-shadow: 0 7px 20px rgba(103, 90, 202, 0.2);
+  cursor: pointer;
+  transition: width 200ms ease, filter 180ms ease, box-shadow 180ms ease;
+}
+
+.save-code-button:hover,
+.save-code-button:focus-visible {
+  width: 132px;
+  outline: none;
+  filter: brightness(1.12);
+  box-shadow: 0 9px 24px rgba(103, 90, 202, 0.32);
+}
+
+.save-code-button:disabled {
+  cursor: wait;
+  opacity: 0.58;
+}
+
+.save-code-icon {
+  flex: 0 0 auto;
+  font-size: 1rem;
+  line-height: 1;
+}
+
+.save-code-label {
+  overflow: hidden;
+  font-size: 0.74rem;
+  font-weight: 600;
+  white-space: nowrap;
+  opacity: 0;
+  transition: opacity 120ms ease 40ms;
+}
+
+.save-code-button:hover .save-code-label,
+.save-code-button:focus-visible .save-code-label {
+  opacity: 1;
 }
 
 .code-editor-input[readonly] {
@@ -1852,12 +1919,14 @@ a {
     font-size: 0.72rem;
   }
 
-  .code-editor-actions {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+  .code-editor-heading-actions {
+    gap: 6px;
   }
 
-  #save-code-file {
-    grid-column: 1 / -1;
+  .new-code-tab-button {
+    min-height: 34px;
+    padding: 0 9px;
+    font-size: 0.65rem;
   }
 
 }
