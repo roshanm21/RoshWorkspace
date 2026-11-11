@@ -4,6 +4,7 @@ const LIKE_DEVICE_KEY = "rosh-portfolio-like-device";
 const LIKE_STORAGE_PREFIX = "__likes";
 const pageContent = document.getElementById("page-content");
 const preloader = document.getElementById("preloader");
+const accountAvatar = document.getElementById("account-avatar");
 const likeButton = document.getElementById("likeBtn");
 const countDisplay = document.getElementById("countDisplay");
 const likeStatus = document.getElementById("like-status");
@@ -11,6 +12,58 @@ const projectSearch = document.getElementById("project-search");
 const projectGrid = document.getElementById("project-grid");
 const projectCount = document.getElementById("project-count");
 const projectsStatus = document.getElementById("projects-status");
+
+async function loadAccountAvatar() {
+  try {
+    const supabase = await getSupabase();
+    const { data, error } = await supabase.auth.getSession();
+    if (error) {
+      throw error;
+    }
+
+    const session = data.session;
+    if (!session) {
+      return;
+    }
+
+    const profilePath = `users/${session.user.id}/profile.json`;
+    const { data: profileFile, error: profileError } = await supabase.storage
+      .from(STORAGE_BUCKET)
+      .download(profilePath);
+    if (profileError) {
+      if (profileError.statusCode === "404" || profileError.status === 404) {
+        return;
+      }
+      throw profileError;
+    }
+
+    const profile = JSON.parse(await profileFile.text());
+    if (typeof profile.name === "string" && profile.name.trim()) {
+      accountAvatar.title = `Edit profile: ${profile.name}`;
+      accountAvatar.setAttribute("aria-label", `Edit profile for ${profile.name}`);
+    }
+    if (
+      typeof profile.avatar_path !== "string"
+      || !profile.avatar_path.startsWith(`users/${session.user.id}/`)
+    ) {
+      return;
+    }
+
+    const { data: avatar, error: avatarError } = await supabase.storage
+      .from(STORAGE_BUCKET)
+      .createSignedUrl(profile.avatar_path, 3600);
+    if (avatarError) {
+      throw avatarError;
+    }
+
+    const image = document.createElement("img");
+    image.src = avatar.signedUrl;
+    image.alt = "";
+    accountAvatar.replaceChildren(image);
+  } catch (error) {
+    console.error("Could not load profile picture:", error);
+  }
+}
 
 function getLikeDeviceId() {
   const userId = localStorage.getItem(LIKE_DEVICE_KEY);
@@ -195,6 +248,7 @@ document.getElementById("year").textContent = String(new Date().getFullYear());
 pageContent.hidden = false;
 loadProjects();
 loadLikeCount();
+loadAccountAvatar();
 window.setTimeout(() => {
   preloader.classList.add("is-leaving");
   window.setTimeout(() => {
