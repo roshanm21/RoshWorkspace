@@ -39,18 +39,17 @@
                 <h1>Workspace<span class="brand-dot">.</span></h1>
                 <p>Manage stored files or write and save code files in your shared workspace.</p>
             </div>
-            <a class="secondary-button" href="./index.html">← Back to portfolio</a>
         </div>
 
         <div class="workspace-tabs" role="tablist" aria-label="Workspace sections">
-            <button id="database-tab" class="workspace-tab is-active" type="button" role="tab"
-                aria-selected="true" aria-controls="database-panel" data-workspace-tab="database">Database</button>
-            <button id="codebase-tab" class="workspace-tab" type="button" role="tab"
-                aria-selected="false" aria-controls="codebase-panel" data-workspace-tab="codebase" tabindex="-1">Codebase</button>
+            <button id="codebase-tab" class="workspace-tab is-active" type="button" role="tab"
+                aria-selected="true" aria-controls="codebase-panel" data-workspace-tab="codebase">Codebase</button>
+            <button id="database-tab" class="workspace-tab" type="button" role="tab"
+                aria-selected="false" aria-controls="database-panel" data-workspace-tab="database" tabindex="-1">Database</button>
         </div>
 
         <section id="database-panel" class="workspace-tab-panel" role="tabpanel"
-            aria-labelledby="database-tab" data-workspace-panel="database">
+            aria-labelledby="database-tab" data-workspace-panel="database" hidden>
             <div class="database-layout">
                 <section class="database-panel glass" aria-labelledby="database-upload-title">
                     <div class="panel-heading">
@@ -91,7 +90,7 @@
         </section>
 
         <section id="codebase-panel" class="workspace-tab-panel" role="tabpanel"
-            aria-labelledby="codebase-tab" data-workspace-panel="codebase" hidden>
+            aria-labelledby="codebase-tab" data-workspace-panel="codebase">
             <div class="codebase-layout">
                 <section class="database-panel glass code-editor-panel" aria-labelledby="code-editor-title">
                     <div class="panel-heading">

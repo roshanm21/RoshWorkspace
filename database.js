@@ -511,17 +511,28 @@ newCodeFileButton.addEventListener("click", () => {
 refreshCodeFilesButton.addEventListener("click", loadCodeFiles);
 
 const workspaceTabs = [...document.querySelectorAll("[data-workspace-tab]")];
+let activeWorkspace = document.querySelector('[data-workspace-tab][aria-selected="true"]')?.dataset.workspaceTab;
 workspaceTabs.forEach((tab, index) => {
   tab.addEventListener("click", () => {
+    const direction = tab.dataset.workspaceTab === "database" ? "from-right" : "from-left";
     workspaceTabs.forEach((workspaceTab) => {
       const isSelected = workspaceTab === tab;
       workspaceTab.setAttribute("aria-selected", String(isSelected));
       workspaceTab.tabIndex = isSelected ? 0 : -1;
       workspaceTab.classList.toggle("is-active", isSelected);
-      document.getElementById(workspaceTab.getAttribute("aria-controls")).hidden = !isSelected;
+      const panel = document.getElementById(workspaceTab.getAttribute("aria-controls"));
+      panel.hidden = !isSelected;
+      if (isSelected && activeWorkspace !== workspaceTab.dataset.workspaceTab) {
+        panel.classList.remove("slide-from-left", "slide-from-right");
+        void panel.offsetWidth;
+        panel.classList.add(direction === "from-left" ? "slide-from-left" : "slide-from-right");
+      }
     });
+    activeWorkspace = tab.dataset.workspaceTab;
     if (tab.dataset.workspaceTab === "codebase") {
       loadCodeFiles();
+    } else {
+      loadFiles();
     }
   });
   tab.addEventListener("keydown", (event) => {
@@ -556,7 +567,7 @@ async function protectDatabasePage() {
     }
 
     databaseContent.hidden = false;
-    await loadFiles();
+    await loadCodeFiles();
     supabase.auth.onAuthStateChange((event, session) => {
       if (event === "SIGNED_OUT" || !session) {
         window.location.replace("./auth.html?next=database.html");
